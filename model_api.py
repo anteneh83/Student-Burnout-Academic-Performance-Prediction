@@ -5,9 +5,8 @@ from flask_cors import CORS
 import numpy as np
 
 app = Flask(__name__)
-CORS(app)  # Enables communication with frontend (React)
+CORS(app) 
 
-# Load trained models
 try:
     lin_reg = joblib.load("linear_model.pkl")
     rf_clf = joblib.load("random_forest_model.pkl")
@@ -21,7 +20,6 @@ def predict():
     print("Received data:", data)
 
     try:
-        # Extract and validate inputs
         study_hours = float(data.get('study_hours', 0))
         sleep_hours = float(data.get('sleep_hours', 0))
         screen_time = float(data.get('screen_time', 0))
@@ -32,14 +30,11 @@ def predict():
         if study_hours + sleep_hours + screen_time > 24:
             return jsonify({"error": "Total hours exceed 24"}), 400
 
-        # Create DataFrame
         df = pd.DataFrame([[study_hours, sleep_hours, screen_time]],
                           columns=["study_hours", "sleep_hours", "screen_time"])
 
-        # Predict average score
         predicted_score = lin_reg.predict(df)[0]
 
-        # Predict burnout level using classifier
         burnout_encoded = rf_clf.predict(df)[0]
 
         try:
