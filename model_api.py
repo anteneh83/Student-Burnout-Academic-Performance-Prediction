@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import joblib
 import pandas as pd
 from flask_cors import CORS
+import numpy as np
 
 app = Flask(__name__)
 CORS(app)  # Enables communication with frontend (React)
@@ -20,10 +21,16 @@ def predict():
     print("Received data:", data)
 
     try:
-        # Extract features
-        study_hours = data['study_hours']
-        sleep_hours = data['sleep_hours']
-        screen_time = data['screen_time']
+        # Extract and validate inputs
+        study_hours = float(data.get('study_hours', 0))
+        sleep_hours = float(data.get('sleep_hours', 0))
+        screen_time = float(data.get('screen_time', 0))
+
+        if study_hours < 0 or sleep_hours < 0 or screen_time < 0:
+            return jsonify({"error": "Hours must be non-negative"}), 400
+
+        if study_hours + sleep_hours + screen_time > 24:
+            return jsonify({"error": "Total hours exceed 24"}), 400
 
         # Create DataFrame
         df = pd.DataFrame([[study_hours, sleep_hours, screen_time]],
@@ -32,13 +39,20 @@ def predict():
         # Predict average score
         predicted_score = lin_reg.predict(df)[0]
 
-        # Predict burnout level using the same input (exclude average_score)
+        # Predict burnout level using classifier
         burnout_encoded = rf_clf.predict(df)[0]
-        burnout_label = label_encoder.inverse_transform([burnout_encoded])[0]
+
+        try:
+            burnout_label = label_encoder.inverse_transform([burnout_encoded])[0]
+        except Exception:
+            burnout_label = "Moderate"
+
+        if pd.isna(burnout_label) or burnout_label.strip() == "":
+            burnout_label = "Moderate"
 
         return jsonify({
             "average_score": round(predicted_score, 2),
-            "burnout_level": burnout_label
+            "burnout_level": burnout_label.lower()
         })
 
     except Exception as e:

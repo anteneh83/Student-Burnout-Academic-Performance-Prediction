@@ -24,7 +24,7 @@ function App() {
     }
 
     if (study + sleep + screen > 24) {
-      setErrorMsg("The total of Study Hours, Sleep Hours, and Screen Time cannot exceed 24 hours.");
+      setErrorMsg("Total hours cannot exceed 24 in a day.");
       setResult(null);
       return;
     }
@@ -41,8 +41,6 @@ function App() {
       });
 
       setResult(res.data);
-      console.error(res.data);
-
     } catch (err) {
       console.error(err);
       setErrorMsg('Prediction failed. Please try again later.');
@@ -86,20 +84,20 @@ function App() {
 
       {errorMsg && <p className="error">{errorMsg}</p>}
 
-      {result && (
+      {result?.burnout_level && (
         <div className="result">
           <h2>📊 Prediction Results</h2>
           <p><strong>Predicted Score:</strong> {result.average_score}</p>
           <p><strong>Burnout Level:</strong> {result.burnout_level}</p>
 
-          {result.burnout_level.toLowerCase() === 'sever' && (
-            <p className="advice">🚨 Severe burnout detected! Please take immediate breaks, get sufficient sleep, and consider talking to a counselor.</p>
+          {result.burnout_level.toLowerCase() === 'severe' && (
+            <p className="advice">🔥 Severe burnout. Please prioritize rest and seek help if needed.</p>
           )}
           {result.burnout_level.toLowerCase() === 'mild' && (
-            <p className="advice">⚠️ Mild burnout. Try to balance your study with rest and reduce screen time.</p>
+            <p className="advice">⚠️ Mild burnout. Take short breaks and manage your workload.</p>
           )}
-          {result.burnout_level.toLowerCase() === 'none' && (
-            <p className="advice">✅ No burnout detected. Keep up the good work and maintain your healthy habits!</p>
+          {result.burnout_level.toLowerCase() === 'moderate' && (
+            <p className="advice">✅ You're doing well. Maintain your balance!</p>
           )}
         </div>
       )}
