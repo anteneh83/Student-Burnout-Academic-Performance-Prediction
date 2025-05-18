@@ -37,13 +37,8 @@ def predict():
 
         burnout_encoded = rf_clf.predict(df)[0]
 
-        try:
-            burnout_label = label_encoder.inverse_transform([burnout_encoded])[0]
-        except Exception:
-            burnout_label = "Moderate"
-
-        if pd.isna(burnout_label) or burnout_label.strip() == "":
-            burnout_label = "Moderate"
+        burnout_label = label_encoder.inverse_transform([burnout_encoded])[0]
+        
 
         return jsonify({
             "average_score": round(predicted_score, 2),
